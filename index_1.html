@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGRA — Sistema Integral de Gestión Radiológica Académica</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --dark:#0A1A0D;--g1:#0D2B12;--g2:#1A4A22;--g3:#2E7D40;
+  --acc:#4CAF65;--bright:#7ED896;--gold:#C8A84B;
+  --white:#EFF7EF;--gray:#7A9E80;--card:#0F2314;
+  --red:#C84B4B;--amber:#C8A84B;--border:rgba(78,175,101,0.20);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Times New Roman','IM Fell English',Georgia,serif;background:var(--dark);color:var(--white);min-height:100vh;display:flex;}
+
+/* SIDEBAR */
+#sidebar{
+  width:240px;min-height:100vh;background:var(--g1);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;
+  transition:transform .3s;
+}
+.sidebar-logo{
+  padding:1.5rem 1.2rem;
+  border-bottom:1px solid var(--border);
+}
+.logo-name{font-size:1.5rem;font-style:italic;font-weight:700;color:var(--bright);}
+.logo-sub{font-size:0.62rem;color:var(--gray);letter-spacing:0.06em;line-height:1.4;margin-top:2px;}
+.sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto;}
+.nav-section{font-size:0.6rem;color:var(--gold);letter-spacing:0.15em;
+  text-transform:uppercase;padding:0.8rem 1.2rem 0.3rem;font-style:normal;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 1.2rem;cursor:pointer;
+  font-size:0.85rem;font-style:italic;color:var(--gray);
+  border-left:2px solid transparent;
+  transition:all .15s;
+}
+.nav-item:hover{color:var(--white);background:rgba(78,175,101,0.08);}
+.nav-item.active{color:var(--bright);border-left-color:var(--bright);background:rgba(78,175,101,0.12);}
+.nav-icon{font-size:1rem;width:20px;text-align:center;}
+.sidebar-foot{
+  padding:1rem 1.2rem;border-top:1px solid var(--border);
+  font-size:0.7rem;color:var(--gray);font-style:italic;
+}
+
+/* MAIN */
+#main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{
+  background:rgba(10,26,13,0.95);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  height:56px;display:flex;align-items:center;
+  padding:0 1.8rem;gap:1rem;
+  position:sticky;top:0;z-index:40;
+}
+.topbar-title{font-size:1rem;font-style:italic;color:var(--white);margin-right:auto;}
+.topbar-badge{
+  font-size:0.65rem;background:rgba(78,175,101,0.15);
+  border:1px solid var(--border);color:var(--bright);
+  padding:3px 10px;border-radius:2px;letter-spacing:0.08em;
+  font-style:normal;
+}
+.content{flex:1;padding:2rem 1.8rem;}
+
+/* PAGES */
+.page{display:none;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS DE STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-top:2px solid var(--g3);padding:1.2rem 1rem;
+}
+.stat-card:hover{border-top-color:var(--bright);}
+.stat-label{font-size:0.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:0.1em;font-style:normal;}
+.stat-value{font-size:2rem;font-weight:700;font-style:italic;color:var(--bright);line-height:1.1;margin:4px 0;}
+.stat-sub{font-size:0.72rem;color:var(--gray);font-style:italic;}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);padding:1.5rem;margin-bottom:1.2rem;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;flex-wrap:wrap;}
+.panel-title{font-size:1rem;font-style:italic;color:var(--bright);}
+.panel-actions{display:flex;gap:0.5rem;flex-wrap:wrap;}
+
+/* BOTONES */
+.btn{
+  font-family:'Times New Roman',Georgia,serif;font-style:italic;
+  font-size:0.8rem;padding:7px 18px;cursor:pointer;
+  border-radius:2px;transition:all .15s;border:1px solid;
+  letter-spacing:0.03em;
+}
+.btn-g{background:var(--g2);border-color:var(--acc);color:var(--bright);}
+.btn-g:hover{background:var(--g3);box-shadow:0 0 14px rgba(78,175,101,0.2);}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--gray);}
+.btn-ghost:hover{border-color:var(--acc);color:var(--white);}
+.btn-red{background:rgba(200,75,75,0.15);border-color:rgba(200,75,75,0.4);color:#f08080;}
+.btn-red:hover{background:rgba(200,75,75,0.25);}
+.btn-sm{padding:4px 12px;font-size:0.72rem;}
+
+/* FORMULARIOS */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.2rem;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:0.72rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;font-style:normal;}
+.form-group input,.form-group select,.form-group textarea{
+  background:var(--g1);border:1px solid var(--border);color:var(--white);
+  font-family:'Times New Roman',Georgia,serif;font-style:italic;font-size:0.85rem;
+  padding:8px 10px;outline:none;width:100%;
+  transition:border-color .15s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--acc);}
+.form-group select option{background:var(--g1);}
+.form-group textarea{resize:vertical;min-height:80px;}
+
+/* TABLA */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+thead tr{background:var(--g2);}
+thead th{
+  padding:9px 12px;text-align:left;font-style:italic;
+  color:var(--bright);font-weight:700;font-size:0.78rem;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid rgba(78,175,101,0.08);transition:background .1s;}
+tbody tr:hover{background:rgba(78,175,101,0.05);}
+tbody td{padding:8px 12px;color:var(--white);font-style:italic;vertical-align:middle;}
+.empty-row td{text-align:center;color:var(--gray);padding:2rem;font-style:italic;}
+
+/* BADGES */
+.badge{display:inline-block;font-size:0.65rem;padding:2px 8px;border-radius:1px;font-style:normal;letter-spacing:0.06em;}
+.badge-g{background:rgba(78,175,101,0.15);color:var(--bright);border:1px solid rgba(78,175,101,0.3);}
+.badge-r{background:rgba(200,75,75,0.15);color:#f08080;border:1px solid rgba(200,75,75,0.3);}
+.badge-a{background:rgba(200,168,75,0.15);color:var(--gold);border:1px solid rgba(200,168,75,0.3);}
+
+/* ALERT */
+.alert{padding:10px 14px;font-size:0.8rem;font-style:italic;margin-bottom:1rem;border-left:3px solid;}
+.alert-g{background:rgba(78,175,101,0.1);border-color:var(--acc);color:var(--bright);}
+.alert-r{background:rgba(200,75,75,0.1);border-color:var(--red);color:#f08080;}
+
+/* PROGRESS BAR */
+.pbar-wrap{background:rgba(78,175,101,0.1);height:8px;border-radius:1px;overflow:hidden;}
+.pbar{background:var(--g3);height:100%;transition:width .4s;border-radius:1px;}
+.pbar.warn{background:var(--gold);}
+.pbar.danger{background:var(--red);}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  z-index:200;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--g1);border:1px solid var(--border);
+  padding:2rem;max-width:520px;width:90%;max-height:85vh;overflow-y:auto;
+  animation:fadeIn .2s ease;
+}
+.modal-title{font-size:1.1rem;font-style:italic;color:var(--bright);margin-bottom:1.2rem;}
+.modal-actions{display:flex;gap:0.7rem;justify-content:flex-end;margin-top:1.2rem;}
+
+/* TABS DENTRO DE PÁGINAS */
+.page-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.5rem;}
+.page-tab{
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--gray);font-family:'Times New Roman',Georgia,serif;
+  font-style:italic;font-size:0.85rem;padding:8px 18px;cursor:pointer;
+  transition:all .15s;margin-bottom:-1px;
+}
+.page-tab:hover{color:var(--white);}
+.page-tab.active{color:var(--bright);border-bottom-color:var(--bright);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* DASHBOARD CHART MINI */
+.mini-chart{display:flex;align-items:flex-end;gap:4px;height:60px;margin-top:8px;}
+.bar-col{flex:1;background:var(--g3);border-radius:1px 1px 0 0;transition:height .4s;min-width:8px;cursor:default;}
+.bar-col:hover{background:var(--bright);}
+
+/* DOSIS GAUGE */
+.gauge-wrap{text-align:center;padding:1rem 0;}
+.gauge-num{font-size:2.5rem;font-weight:700;font-style:italic;}
+.gauge-label{font-size:0.72rem;color:var(--gray);font-style:italic;}
+
+/* MOBILE */
+@media(max-width:700px){
+  #sidebar{transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #main{margin-left:0;}
+  .hamburger{display:flex!important;}
+}
+.hamburger{
+  display:none;background:none;border:none;color:var(--bright);
+  font-size:1.4rem;cursor:pointer;padding:4px;
+}
+
+/* SCROLL */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--dark);}
+::-webkit-scrollbar-thumb{background:var(--g3);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-name">SIGRA</div>
+    <div class="logo-sub">Sistema Integral de Gestión<br>Radiológica Académica</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="goto('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+
+    <div class="nav-section">Académico</div>
+    <div class="nav-item" onclick="goto('estudiantes')">
+      <span class="nav-icon">🎓</span> Estudiantes
+    </div>
+    <div class="nav-item" onclick="goto('notas')">
+      <span class="nav-icon">📋</span> Notas
+    </div>
+    <div class="nav-item" onclick="goto('horas')">
+      <span class="nav-icon">🏥</span> Horas clínicas
+    </div>
+    <div class="nav-item" onclick="goto('dosimetria')">
+      <span class="nav-icon">☢️</span> Dosimetría
+    </div>
+
+    <div class="nav-section">Administrativo</div>
+    <div class="nav-item" onclick="goto('facturacion')">
+      <span class="nav-icon">💳</span> Facturación
+    </div>
+    <div class="nav-item" onclick="goto('academia')">
+      <span class="nav-icon">📚</span> Academia
+    </div>
+    <div class="nav-item" onclick="goto('comunicacion')">
+      <span class="nav-icon">📡</span> Comunicación
+    </div>
+  </nav>
+  <div class="sidebar-foot">
+    Universidad Santander · Panamá<br>
+    Radiología e Imágenes Médicas
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-badge" id="topbar-badge">COORDINADOR</div>
+  </div>
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div id="page-dashboard" class="page active">
+      <div class="stats-row" id="dash-stats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;">
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Alertas del sistema</div></div>
+          <div id="dash-alerts"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Actividad reciente</div></div>
+          <div id="dash-activity" style="font-size:0.8rem;font-style:italic;"></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:1.2rem;">
+        <div class="panel-header"><div class="panel-title">Avance de horas clínicas por cohorte</div></div>
+        <div id="dash-horas-chart"></div>
+      </div>
+    </div>
+
+    <!-- ══ ESTUDIANTES ══ -->
+    <div id="page-estudiantes" class="page">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Registro de estudiantes</div>
+          <div class="panel-actions">
+            <button class="btn btn-g" onclick="openModal('modal-estudiante')">+ Nuevo estudiante</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr>
+            <th>Código</th><th>Nombre</th><th>Cédula</th><th>Cohorte</th><th>Estado</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="tbl-estudiantes"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══ NOTAS ══ -->
+    <div id="page-notas" class="page">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="switchTab('notas','registrar')">Registrar nota</button>
+        <button class="page-tab" onclick="switchTab('notas','historial')">Historial de notas</button>
+        <button class="page-tab" onclick="switchTab('notas','reporte')">Reporte por cohorte</button>
+      </div>
+      <div id="notas-registrar" class="tab-pane active">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Nueva calificación</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Estudiante</label>
+              <select id="nota-est"></select>
+            </div>
+            <div class="form-group">
+              <label>Asignatura</label>
+              <select id="nota-asig">
+                <option>Física de la Radiación</option>
+                <option>Protección Radiológica</option>
+                <option>TC — Tomografía Computarizada</option>
+                <option>RM — Resonancia Magnética</option>
+                <option>Hemodinámica</option>
+                <option>Radiología Pediátrica</option>
+                <option>Radiología Convencional</option>
+                <option>Ultrasonido</option>
+                <option>Anatomía Imagenológica</option>
+                <option>Bioética Radiológica</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Período</label>
+              <select id="nota-periodo">
+                <option>2026-I</option><option>2025-II</option><option>2025-I</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Nota (0–100)</label>
+              <input type="number" id="nota-valor" min="0" max="100" placeholder="85">
+            </div>
+            <div class="form-group">
+              <label>Tipo de evaluación</label>
+              <select id="nota-tipo">
+                <option>Parcial 1</option><option>Parcial 2</option>
+                <option>Final</option><option>Práctica clínica</option><option>Trabajo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Observaciones</label>
+              <input type="text" id="nota-obs" placeholder="Opcional">
+            </div>
+          </div>
+          <button class="btn btn-g" onclick="guardarNota()">Registrar calificación</button>
+        </div>
+      </div>
+      <div id="notas-historial" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Historial de calificaciones</div>
+            <input class="btn btn-ghost" style="padding:6px 10px;font-style:italic;" type="text" id="nota-search" placeholder="Buscar estudiante..." oninput="renderNotas()">
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Estudiante</th><th>Asignatura</th><th>Período</th><th>Tipo</th><th>Nota</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="tbl-notas"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div id="notas-reporte" class="tab-pane">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Promedio por asignatura</div>
+          <div id="reporte-notas"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ HORAS CLÍNICAS ══ -->
+    <div id="page-horas" class="page">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="switchTab('horas','registrar')">Registrar horas</button>
+        <button class="page-tab" onclick="switchTab('horas','historial')">Historial</button>
+        <button class="page-tab" onclick="switchTab('horas','avance')">Avance individual</button>
+      </div>
+      <div id="horas-registrar" class="tab-pane active">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Registro de horas de práctica clínica</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Estudiante</label>
+              <select id="hora-est"></select>
+            </div>
+            <div class="form-group">
+              <label>Modalidad diagnóstica</label>
+              <select id="hora-mod">
+                <option>TC — Tomografía Computarizada</option>
+                <option>RM — Resonancia Magnética</option>
+                <option>Hemodinámica</option>
+                <option>Radiología Pediátrica</option>
+                <option>Radiología Convencional</option>
+                <option>Ultrasonido</option>
+                <option>Medicina Nuclear</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Centro hospitalario</label>
+              <select id="hora-hospital">
+                <option>Hospital Santo Tomás</option>
+                <option>Hospital Nacional</option>
+                <option>Complejo Hospitalario Dr. Arnulfo Arias</option>
+                <option>Hospital del Niño</option>
+                <option>Hospital Rafael Hernández</option>
+                <option>Hospital de la Caja del Seguro Social</option>
+                <option>Hospital Chiriquí</option>
+                <option>Hospital Regional de Azuero</option>
+                <option>Clínica Hospital San Fernando</option>
+                <option>Hospital Punta Pacífica</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preceptor</label>
+              <input type="text" id="hora-preceptor" placeholder="Nombre del preceptor">
+            </div>
+            <div class="form-group">
+              <label>Fecha de rotación</label>
+              <input type="date" id="hora-fecha">
+            </div>
+            <div class="form-group">
+              <label>Horas completadas</label>
+              <input type="number" id="hora-num" min="1" max="240" placeholder="8">
+            </div>
+            <div class="form-group">
+              <label>Período académico</label>
+              <select id="hora-periodo">
+                <option>2026-I</option><option>2025-II</option><option>2025-I</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Rotación</label>
+              <select id="hora-rotacion">
+                <option>R1</option><option>R2</option><option>R3</option><option>R4</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-g" onclick="guardarHora()">Registrar horas</button>
+        </div>
+      </div>
+      <div id="horas-historial" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Historial de horas clínicas</div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Estudiante</th><th>Modalidad</th><th>Hospital</th><th>Preceptor</th><th>Fecha</th><th>Horas</th><th>Rotación</th><th></th></tr></thead>
+            <tbody id="tbl-horas"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div id="horas-avance" class="tab-pane">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Avance de horas por estudiante</div>
+          <div id="avance-horas"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DOSIMETRÍA ══ -->
+    <div id="page-dosimetria" class="page">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="switchTab('dosimetria','registrar')">Registrar lectura</button>
+        <button class="page-tab" onclick="switchTab('dosimetria','historial')">Historial dosimétrico</button>
+        <button class="page-tab" onclick="switchTab('dosimetria','alertas')">Alertas de dosis</button>
+      </div>
+      <div id="dosimetria-registrar" class="tab-pane active">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Registro de lectura dosimétrica</div>
+          <div class="alert alert-g">Obligatorio según Decreto Ejecutivo 770 — Protección Radiológica, Panamá.</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Estudiante</label>
+              <select id="dosi-est"></select>
+            </div>
+            <div class="form-group">
+              <label>N.° de dosímetro</label>
+              <input type="text" id="dosi-num" placeholder="DOS-2026-001">
+            </div>
+            <div class="form-group">
+              <label>Fecha de lectura</label>
+              <input type="date" id="dosi-fecha">
+            </div>
+            <div class="form-group">
+              <label>Dosis recibida (mSv)</label>
+              <input type="number" id="dosi-valor" min="0" step="0.01" placeholder="0.25">
+            </div>
+            <div class="form-group">
+              <label>Tipo de radiación</label>
+              <select id="dosi-tipo">
+                <option>Rayos X</option>
+                <option>Rayos gamma</option>
+                <option>Radiación beta</option>
+                <option>Neutrones</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Área de exposición</label>
+              <select id="dosi-area">
+                <option>TC — Tomografía</option>
+                <option>Sala de radiología convencional</option>
+                <option>Hemodinámica</option>
+                <option>RM — Resonancia Magnética</option>
+                <option>Medicina Nuclear</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Período de monitoreo</label>
+              <select id="dosi-periodo">
+                <option>Mensual</option><option>Bimestral</option><option>Trimestral</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Observaciones</label>
+              <input type="text" id="dosi-obs" placeholder="Sin anomalías">
+            </div>
+          </div>
+          <button class="btn btn-g" onclick="guardarDosis()">Registrar lectura</button>
+        </div>
+      </div>
+      <div id="dosimetria-historial" class="tab-pane">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Historial dosimétrico individual</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Estudiante</th><th>Dosímetro</th><th>Fecha</th><th>Dosis (mSv)</th><th>Tipo</th><th>Área</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="tbl-dosis"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div id="dosimetria-alertas" class="tab-pane">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Monitor de dosis acumulada (límite: 20 mSv/año)</div>
+          <div id="dosis-monitor"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FACTURACIÓN ══ -->
+    <div id="page-facturacion" class="page">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="switchTab('facturacion','registrar')">Registrar pago</button>
+        <button class="page-tab" onclick="switchTab('facturacion','cuentas')">Estado de cuentas</button>
+      </div>
+      <div id="facturacion-registrar" class="tab-pane active">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Registro de pago</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Estudiante</label>
+              <select id="fact-est"></select>
+            </div>
+            <div class="form-group">
+              <label>Concepto</label>
+              <select id="fact-concepto">
+                <option>Matrícula</option>
+                <option>Colegiatura mensual</option>
+                <option>Derechos de práctica clínica</option>
+                <option>Derechos de graduación</option>
+                <option>Material de laboratorio</option>
+                <option>Dosímetro</option>
+                <option>Constancia / certificado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Monto (USD)</label>
+              <input type="number" id="fact-monto" min="0" step="0.01" placeholder="250.00">
+            </div>
+            <div class="form-group">
+              <label>Método de pago</label>
+              <select id="fact-metodo">
+                <option>Transferencia bancaria</option>
+                <option>Tarjeta de crédito/débito</option>
+                <option>Efectivo</option>
+                <option>Cheque</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fecha de pago</label>
+              <input type="date" id="fact-fecha">
+            </div>
+            <div class="form-group">
+              <label>N.° de recibo</label>
+              <input type="text" id="fact-recibo" placeholder="REC-2026-001">
+            </div>
+            <div class="form-group">
+              <label>Período</label>
+              <select id="fact-periodo">
+                <option>2026-I</option><option>2025-II</option><option>2025-I</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Observaciones</label>
+              <input type="text" id="fact-obs" placeholder="Opcional">
+            </div>
+          </div>
+          <button class="btn btn-g" onclick="guardarPago()">Registrar pago</button>
+        </div>
+      </div>
+      <div id="facturacion-cuentas" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Estado de cuentas por estudiante</div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Estudiante</th><th>Concepto</th><th>Monto</th><th>Método</th><th>Fecha</th><th>Período</th><th>Recibo</th><th></th></tr></thead>
+            <tbody id="tbl-pagos"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ACADEMIA ══ -->
+    <div id="page-academia" class="page">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="switchTab('academia','registrar')">Registrar producción</button>
+        <button class="page-tab" onclick="switchTab('academia','historial')">Historial académico</button>
+      </div>
+      <div id="academia-registrar" class="tab-pane active">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Registro de producción académica docente</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Docente</label>
+              <input type="text" id="acad-docente" placeholder="Nombre del docente">
+            </div>
+            <div class="form-group">
+              <label>Tipo de producción</label>
+              <select id="acad-tipo">
+                <option>Tesis / Trabajo de grado dirigido</option>
+                <option>Artículo científico publicado</option>
+                <option>Ponencia en congreso</option>
+                <option>Capítulo de libro</option>
+                <option>Proyecto de extensión</option>
+                <option>Recurso educativo digital</option>
+                <option>Curso de capacitación impartido</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Título / Descripción</label>
+              <input type="text" id="acad-titulo" placeholder="Título del trabajo o actividad">
+            </div>
+            <div class="form-group">
+              <label>Revista / Institución / Evento</label>
+              <input type="text" id="acad-medio" placeholder="Nombre de la revista, evento o institución">
+            </div>
+            <div class="form-group">
+              <label>Año</label>
+              <input type="number" id="acad-anio" min="2020" max="2030" placeholder="2026">
+            </div>
+            <div class="form-group">
+              <label>Estudiantes involucrados</label>
+              <input type="text" id="acad-estudiantes" placeholder="Nombres (si aplica)">
+            </div>
+          </div>
+          <button class="btn btn-g" onclick="guardarAcademia()">Registrar producción</button>
+        </div>
+      </div>
+      <div id="academia-historial" class="tab-pane">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Repositorio de producción académica</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Docente</th><th>Tipo</th><th>Título</th><th>Medio</th><th>Año</th><th></th></tr></thead>
+            <tbody id="tbl-academia"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ COMUNICACIÓN ══ -->
+    <div id="page-comunicacion" class="page">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="switchTab('comunicacion','nuevo')">Nuevo mensaje</button>
+        <button class="page-tab" onclick="switchTab('comunicacion','bandeja')">Bandeja institucional</button>
+      </div>
+      <div id="comunicacion-nuevo" class="tab-pane active">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Enviar comunicación institucional</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Para</label>
+              <select id="msg-para">
+                <option>Todos los estudiantes</option>
+                <option>Cohorte 2025-1</option>
+                <option>Cohorte 2025-2</option>
+                <option>Cohorte 2025-3</option>
+                <option>Todos los preceptores</option>
+                <option>Cuerpo docente</option>
+                <option>Coordinación</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tipo de mensaje</label>
+              <select id="msg-tipo">
+                <option>Aviso institucional</option>
+                <option>Alerta académica</option>
+                <option>Convocatoria</option>
+                <option>Comunicado oficial</option>
+                <option>Recordatorio</option>
+                <option>Circular</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label>Asunto</label>
+              <input type="text" id="msg-asunto" placeholder="Asunto del mensaje">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label>Mensaje</label>
+              <textarea id="msg-cuerpo" rows="5" placeholder="Redacte el mensaje institucional..."></textarea>
+            </div>
+          </div>
+          <button class="btn btn-g" onclick="enviarMensaje()">Enviar mensaje</button>
+        </div>
+      </div>
+      <div id="comunicacion-bandeja" class="tab-pane">
+        <div class="panel">
+          <div class="panel-title" style="margin-bottom:1rem;">Bandeja institucional</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Fecha</th><th>Para</th><th>Tipo</th><th>Asunto</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="tbl-mensajes"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modal-estudiante">
+  <div class="modal">
+    <div class="modal-title">Registrar nuevo estudiante</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="est-codigo" placeholder="RAD-2026-001">
+      </div>
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="est-nombre" placeholder="Apellido, Nombre">
+      </div>
+      <div class="form-group">
+        <label>Cédula</label>
+        <input type="text" id="est-cedula" placeholder="8-000-0000">
+      </div>
+      <div class="form-group">
+        <label>Cohorte</label>
+        <select id="est-cohorte">
+          <option>2025-1</option><option>2025-2</option><option>2025-3</option><option>2026-1</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Correo institucional</label>
+        <input type="email" id="est-email" placeholder="estudiante@usantander.edu.pa">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="text" id="est-tel" placeholder="6000-0000">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-estudiante')">Cancelar</button>
+      <button class="btn btn-g" onclick="guardarEstudiante()">Guardar estudiante</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-title">Confirmar eliminación</div>
+    <p style="font-style:italic;font-size:0.88rem;color:var(--gray);">¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn btn-red" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-ok">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:2rem;margin-bottom:0.7rem;">✦</div>
+    <div class="modal-title" id="modal-ok-msg" style="text-align:center;"></div>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-g" onclick="closeModal('modal-ok')">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  BASE DE DATOS LOCAL (localStorage)
+// ═══════════════════════════════════════════════════════
+const DB = {
+  get(k){ try{ return JSON.parse(localStorage.getItem('sigra_'+k)||'[]'); }catch(e){ return []; } },
+  set(k,v){ localStorage.setItem('sigra_'+k, JSON.stringify(v)); },
+  push(k,obj){ const a=DB.get(k); a.push({...obj, id: Date.now()}); DB.set(k,a); return a; },
+  del(k,id){ DB.set(k, DB.get(k).filter(x=>x.id!==id)); }
+};
+
+// Semilla de datos iniciales
+(function seed(){
+  if(DB.get('estudiantes').length > 0) return;
+  const ests = [
+    {codigo:'RAD-001',nombre:'Álvarez, María',cedula:'8-123-4567',cohorte:'2025-1',email:'malvarez@usantander.edu.pa',tel:'6001-0001',estado:'Activo',id:1001},
+    {codigo:'RAD-002',nombre:'Bermúdez, Carlos',cedula:'8-234-5678',cohorte:'2025-1',email:'cbermudez@usantander.edu.pa',tel:'6001-0002',estado:'Activo',id:1002},
+    {codigo:'RAD-003',nombre:'Cruz, Diana',cedula:'8-345-6789',cohorte:'2025-2',email:'dcruz@usantander.edu.pa',tel:'6001-0003',estado:'Activo',id:1003},
+    {codigo:'RAD-004',nombre:'Delgado, Roberto',cedula:'8-456-7890',cohorte:'2025-2',email:'rdelgado@usantander.edu.pa',tel:'6001-0004',estado:'Activo',id:1004},
+    {codigo:'RAD-005',nombre:'Espino, Laura',cedula:'8-567-8901',cohorte:'2025-3',email:'lespino@usantander.edu.pa',tel:'6001-0005',estado:'Activo',id:1005},
+    {codigo:'RAD-006',nombre:'Flores, Andrés',cedula:'8-678-9012',cohorte:'2025-3',email:'aflores@usantander.edu.pa',tel:'6001-0006',estado:'Activo',id:1006},
+  ];
+  DB.set('estudiantes', ests);
+  DB.set('notas', [
+    {id:2001,est:1001,nombre:'Álvarez, María',asig:'TC — Tomografía Computarizada',periodo:'2026-I',tipo:'Parcial 1',valor:88,obs:'',ts:Date.now()},
+    {id:2002,est:1002,nombre:'Bermúdez, Carlos',asig:'Protección Radiológica',periodo:'2026-I',tipo:'Parcial 1',valor:72,obs:'',ts:Date.now()},
+    {id:2003,est:1003,nombre:'Cruz, Diana',asig:'Física de la Radiación',periodo:'2026-I',tipo:'Final',valor:91,obs:'Excelente',ts:Date.now()},
+  ]);
+  DB.set('horas', [
+    {id:3001,est:1001,nombre:'Álvarez, María',mod:'TC — Tomografía Computarizada',hospital:'Hospital Santo Tomás',preceptor:'Dr. Morales',fecha:'2026-03-15',horas:40,periodo:'2026-I',rotacion:'R1',ts:Date.now()},
+    {id:3002,est:1002,nombre:'Bermúdez, Carlos',mod:'RM — Resonancia Magnética',hospital:'Hospital Nacional',preceptor:'Dra. Pérez',fecha:'2026-03-20',horas:32,periodo:'2026-I',rotacion:'R2',ts:Date.now()},
+    {id:3003,est:1003,nombre:'Cruz, Diana',mod:'Hemodinámica',hospital:'Complejo Hospitalario Dr. Arnulfo Arias',preceptor:'Dr. González',fecha:'2026-04-01',horas:24,periodo:'2026-I',rotacion:'R1',ts:Date.now()},
+  ]);
+  DB.set('dosis', [
+    {id:4001,est:1001,nombre:'Álvarez, María',num:'DOS-2026-001',fecha:'2026-03-31',valor:0.18,tipo:'Rayos X',area:'TC — Tomografía',periodo:'Mensual',obs:'Normal',ts:Date.now()},
+    {id:4002,est:1002,nombre:'Bermúdez, Carlos',num:'DOS-2026-002',fecha:'2026-03-31',valor:0.09,tipo:'Rayos X',area:'Sala de radiología convencional',periodo:'Mensual',obs:'Normal',ts:Date.now()},
+    {id:4003,est:1005,nombre:'Espino, Laura',num:'DOS-2026-005',fecha:'2026-03-31',valor:1.45,tipo:'Rayos gamma',area:'Medicina Nuclear',periodo:'Mensual',obs:'Dentro del límite',ts:Date.now()},
+  ]);
+  DB.set('pagos',[
+    {id:5001,est:1001,nombre:'Álvarez, María',concepto:'Matrícula',monto:350,metodo:'Transferencia bancaria',fecha:'2026-01-10',periodo:'2026-I',recibo:'REC-001',obs:'',ts:Date.now()},
+    {id:5002,est:1002,nombre:'Bermúdez, Carlos',concepto:'Colegiatura mensual',monto:220,metodo:'Tarjeta de crédito/débito',fecha:'2026-02-05',periodo:'2026-I',recibo:'REC-002',obs:'',ts:Date.now()},
+  ]);
+  DB.set('academia',[
+    {id:6001,docente:'Juan Díaz',tipo:'Artículo científico publicado',titulo:'Estrategias TIC en la formación radiológica',medio:'Revista RADIUS',anio:2025,estudiantes:'Cruz, Diana',ts:Date.now()},
+  ]);
+  DB.set('mensajes',[
+    {id:7001,para:'Todos los estudiantes',tipo:'Aviso institucional',asunto:'Inicio de rotaciones clínicas 2026-I',cuerpo:'Se recuerda que las rotaciones clínicas del período 2026-I inician el 10 de marzo.',leido:true,ts:Date.now()},
+  ]);
+  DB.set('log',[]);
+})();
+
+// ═══════════════════════════════════════════════════════
+//  LOG DE ACTIVIDAD
+// ═══════════════════════════════════════════════════════
+function log(msg){
+  const a = DB.get('log');
+  a.unshift({msg, ts: new Date().toLocaleString('es-PA')});
+  if(a.length>20) a.pop();
+  DB.set('log', a);
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVEGACIÓN
+// ═══════════════════════════════════════════════════════
+const titles = {
+  dashboard:'Dashboard',estudiantes:'Estudiantes',notas:'Notas',
+  horas:'Horas clínicas',dosimetria:'Dosimetría',
+  facturacion:'Facturación',academia:'Academia',comunicacion:'Comunicación'
+};
+function goto(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.textContent.trim().toLowerCase().includes(titles[page].toLowerCase().split(' ')[0]))
+      n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = titles[page];
+  render(page);
+  if(window.innerWidth<=700) document.getElementById('sidebar').classList.remove('open');
+}
+
+function switchTab(section, tab){
+  document.querySelectorAll('#page-'+section+' .tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#page-'+section+' .page-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(section+'-'+tab).classList.add('active');
+  event.currentTarget.classList.add('active');
+  renderTab(section, tab);
+}
+
+function render(page){
+  if(page==='dashboard') renderDash();
+  if(page==='estudiantes') renderEstudiantes();
+  if(page==='notas'){ populateSelects(); renderNotas(); }
+  if(page==='horas'){ populateSelects(); renderHoras(); }
+  if(page==='dosimetria'){ populateSelects(); renderDosis(); }
+  if(page==='facturacion'){ populateSelects(); renderPagos(); }
+  if(page==='academia') renderAcademia();
+  if(page==='comunicacion') renderMensajes();
+}
+
+function renderTab(section, tab){
+  if(section==='notas'&&tab==='historial') renderNotas();
+  if(section==='notas'&&tab==='reporte') renderReporteNotas();
+  if(section==='horas'&&tab==='historial') renderHoras();
+  if(section==='horas'&&tab==='avance') renderAvanceHoras();
+  if(section==='dosimetria'&&tab==='historial') renderDosis();
+  if(section==='dosimetria'&&tab==='alertas') renderDosisMonitor();
+  if(section==='facturacion'&&tab==='cuentas') renderPagos();
+  if(section==='academia'&&tab==='historial') renderAcademia();
+  if(section==='comunicacion'&&tab==='bandeja') renderMensajes();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SELECTS DINÁMICOS
+// ═══════════════════════════════════════════════════════
+function populateSelects(){
+  const ests = DB.get('estudiantes');
+  const opts = ests.map(e=>`<option value="${e.id}">${e.nombre} (${e.codigo})</option>`).join('');
+  ['nota-est','hora-est','dosi-est','fact-est'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = opts;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDash(){
+  const ests = DB.get('estudiantes');
+  const notas = DB.get('notas');
+  const horas = DB.get('horas');
+  const dosis = DB.get('dosis');
+  const pagos = DB.get('pagos');
+  const msgs = DB.get('mensajes');
+
+  const totalHoras = horas.reduce((s,h)=>s+Number(h.horas),0);
+  const totalPagos = pagos.reduce((s,p)=>s+Number(p.monto),0);
+  const promNotas = notas.length ? (notas.reduce((s,n)=>s+Number(n.valor),0)/notas.length).toFixed(1) : '—';
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Estudiantes activos</div><div class="stat-value">${ests.length}</div><div class="stat-sub">3 cohortes activas</div></div>
+    <div class="stat-card"><div class="stat-label">Calificaciones registradas</div><div class="stat-value">${notas.length}</div><div class="stat-sub">Promedio: ${promNotas}</div></div>
+    <div class="stat-card"><div class="stat-label">Horas clínicas totales</div><div class="stat-value">${totalHoras}</div><div class="stat-sub">En ${[...new Set(horas.map(h=>h.hospital))].length} hospitales</div></div>
+    <div class="stat-card"><div class="stat-label">Lecturas dosimétricas</div><div class="stat-value">${dosis.length}</div><div class="stat-sub">Decreto Ejecutivo 770</div></div>
+    <div class="stat-card"><div class="stat-label">Ingresos registrados</div><div class="stat-value">$${totalPagos.toLocaleString()}</div><div class="stat-sub">${pagos.length} transacciones</div></div>
+    <div class="stat-card"><div class="stat-label">Comunicados enviados</div><div class="stat-value">${msgs.length}</div><div class="stat-sub">Canal institucional</div></div>
+  `;
+
+  // Alertas
+  const alerts = [];
+  const dosisAcum = {};
+  dosis.forEach(d=>{ dosisAcum[d.est]=(dosisAcum[d.est]||0)+Number(d.valor); });
+  ests.forEach(e=>{
+    const total = dosisAcum[e.id]||0;
+    if(total>15) alerts.push({tipo:'r',msg:`⚠️ ${e.nombre}: dosis acumulada ${total.toFixed(2)} mSv — cerca del límite anual (20 mSv)`});
+  });
+  notas.forEach(n=>{ if(Number(n.valor)<60) alerts.push({tipo:'r',msg:`📋 Nota baja: ${n.nombre} — ${n.asig}: ${n.valor}/100`}); });
+  if(!alerts.length) alerts.push({tipo:'g',msg:'✦ Sin alertas críticas en este momento'});
+
+  document.getElementById('dash-alerts').innerHTML = alerts.map(a=>
+    `<div class="alert alert-${a.tipo}" style="margin-bottom:6px;">${a.msg}</div>`
+  ).join('');
+
+  // Actividad reciente
+  const lg = DB.get('log');
+  document.getElementById('dash-activity').innerHTML = lg.length
+    ? lg.slice(0,8).map(l=>`<div style="padding:5px 0;border-bottom:1px solid var(--border);color:var(--gray);">${l.ts} — <span style="color:var(--white);">${l.msg}</span></div>`).join('')
+    : '<div style="color:var(--gray);font-style:italic;">Sin actividad reciente</div>';
+
+  // Gráfico de horas por estudiante
+  const horasPorEst = {};
+  ests.forEach(e=>{ horasPorEst[e.nombre.split(',')[0]]=0; });
+  horas.forEach(h=>{
+    const est = ests.find(e=>e.id===h.est||e.id===Number(h.est));
+    if(est) horasPorEst[est.nombre.split(',')[0]]=(horasPorEst[est.nombre.split(',')[0]]||0)+Number(h.horas);
+  });
+  const maxH = Math.max(...Object.values(horasPorEst),1);
+  document.getElementById('dash-horas-chart').innerHTML = `
+    <div style="display:flex;gap:12px;align-items:flex-end;height:80px;padding-top:8px;">
+      ${Object.entries(horasPorEst).map(([n,h])=>`
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:0.65rem;color:var(--bright);font-style:italic;">${h}h</div>
+          <div style="flex:1;width:100%;background:var(--g3);border-radius:2px 2px 0 0;
+            height:${Math.round((h/maxH)*60)}px;min-height:4px;transition:height .4s;"></div>
+          <div style="font-size:0.6rem;color:var(--gray);text-align:center;font-style:italic;">${n}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="font-size:0.65rem;color:var(--gray);margin-top:4px;font-style:italic;">Meta mínima: 80 horas por período</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  ESTUDIANTES
+// ═══════════════════════════════════════════════════════
+function renderEstudiantes(){
+  const data = DB.get('estudiantes');
+  const tbody = document.getElementById('tbl-estudiantes');
+  if(!data.length){
+    tbody.innerHTML=`<tr class="empty-row"><td colspan="6">Sin estudiantes registrados</td></tr>`;return;
+  }
+  tbody.innerHTML = data.map(e=>`
+    <tr>
+      <td><span class="badge badge-g">${e.codigo}</span></td>
+      <td>${e.nombre}</td>
+      <td>${e.cedula}</td>
+      <td>${e.cohorte}</td>
+      <td><span class="badge badge-g">Activo</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRecord('estudiantes',${e.id})">Eliminar</button></td>
+    </tr>
+  `).join('');
+}
+
+function guardarEstudiante(){
+  const codigo = v('est-codigo'), nombre = v('est-nombre'), cedula = v('est-cedula');
+  if(!codigo||!nombre||!cedula){ showOk('Complete todos los campos requeridos.'); return; }
+  const ests = DB.get('estudiantes');
+  if(ests.find(e=>e.cedula===cedula)){ showOk('Ya existe un estudiante con esa cédula.'); return; }
+  DB.push('estudiantes',{codigo,nombre,cedula,cohorte:v('est-cohorte'),email:v('est-email'),tel:v('est-tel'),estado:'Activo'});
+  log(`Estudiante registrado: ${nombre}`);
+  closeModal('modal-estudiante');
+  ['est-codigo','est-nombre','est-cedula','est-email','est-tel'].forEach(id=>document.getElementById(id).value='');
+  renderEstudiantes();
+  showOk(`Estudiante ${nombre} registrado correctamente.`);
+}
+
+// ═══════════════════════════════════════════════════════
+//  NOTAS
+// ═══════════════════════════════════════════════════════
+function guardarNota(){
+  const estId = Number(document.getElementById('nota-est').value);
+  const ests = DB.get('estudiantes');
+  const est = ests.find(e=>e.id===estId);
+  if(!est){ showOk('Seleccione un estudiante.'); return; }
+  const valor = Number(v('nota-valor'));
+  if(!valor&&valor!==0||valor<0||valor>100){ showOk('Ingrese una nota válida (0–100).'); return; }
+  DB.push('notas',{est:estId,nombre:est.nombre,asig:v('nota-asig'),periodo:v('nota-periodo'),tipo:v('nota-tipo'),valor,obs:v('nota-obs'),ts:Date.now()});
+  log(`Nota registrada: ${est.nombre} — ${v('nota-asig')}: ${valor}`);
+  document.getElementById('nota-valor').value='';
+  document.getElementById('nota-obs').value='';
+  renderNotas();
+  showOk(`Calificación ${valor}/100 registrada para ${est.nombre}.`);
+}
+
+function renderNotas(){
+  const q = document.getElementById('nota-search')?.value.toLowerCase()||'';
+  const data = DB.get('notas').filter(n=>n.nombre.toLowerCase().includes(q)||n.asig.toLowerCase().includes(q));
+  const tbody = document.getElementById('tbl-notas');
+  if(!tbody) return;
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="7">Sin calificaciones registradas</td></tr>`; return; }
+  tbody.innerHTML = data.reverse().map(n=>`
+    <tr>
+      <td>${n.nombre}</td><td>${n.asig}</td><td>${n.periodo}</td><td>${n.tipo}</td>
+      <td><strong style="color:${n.valor>=70?'var(--bright)':n.valor>=60?'var(--gold)':'#f08080'}">${n.valor}</strong></td>
+      <td><span class="badge ${n.valor>=70?'badge-g':n.valor>=60?'badge-a':'badge-r'}">${n.valor>=70?'Aprobado':n.valor>=60?'En riesgo':'Reprobado'}</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRecord('notas',${n.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderReporteNotas(){
+  const notas = DB.get('notas');
+  const asigs = {};
+  notas.forEach(n=>{ if(!asigs[n.asig]) asigs[n.asig]=[]; asigs[n.asig].push(n.valor); });
+  const el = document.getElementById('reporte-notas');
+  if(!el) return;
+  el.innerHTML = Object.entries(asigs).map(([a,vals])=>{
+    const prom = (vals.reduce((s,v)=>s+v,0)/vals.length).toFixed(1);
+    const pct = Math.round((prom/100)*100);
+    return `
+      <div style="margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-style:italic;margin-bottom:4px;">
+          <span>${a}</span>
+          <span style="color:var(--bright);">${prom}/100 (${vals.length} reg.)</span>
+        </div>
+        <div class="pbar-wrap"><div class="pbar ${pct>=70?'':'warn'}" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('') || '<div style="color:var(--gray);font-style:italic;">Sin datos suficientes</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+//  HORAS CLÍNICAS
+// ═══════════════════════════════════════════════════════
+function guardarHora(){
+  const estId = Number(document.getElementById('hora-est').value);
+  const ests = DB.get('estudiantes');
+  const est = ests.find(e=>e.id===estId);
+  if(!est){ showOk('Seleccione un estudiante.'); return; }
+  const horas = Number(v('hora-num'));
+  if(!horas||horas<1){ showOk('Ingrese un número válido de horas.'); return; }
+  const preceptor = v('hora-preceptor');
+  if(!preceptor){ showOk('Ingrese el nombre del preceptor.'); return; }
+  DB.push('horas',{est:estId,nombre:est.nombre,mod:v('hora-mod'),hospital:v('hora-hospital'),preceptor,fecha:v('hora-fecha'),horas,periodo:v('hora-periodo'),rotacion:v('hora-rotacion'),ts:Date.now()});
+  log(`Horas registradas: ${est.nombre} — ${horas}h en ${v('hora-mod')}`);
+  document.getElementById('hora-num').value='';
+  document.getElementById('hora-preceptor').value='';
+  renderHoras();
+  showOk(`${horas} horas de práctica registradas para ${est.nombre}.`);
+}
+
+function renderHoras(){
+  const data = DB.get('horas');
+  const tbody = document.getElementById('tbl-horas');
+  if(!tbody) return;
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="8">Sin horas registradas</td></tr>`; return; }
+  tbody.innerHTML = data.reverse().map(h=>`
+    <tr>
+      <td>${h.nombre}</td><td>${h.mod}</td><td>${h.hospital}</td>
+      <td>${h.preceptor}</td><td>${h.fecha||'—'}</td>
+      <td><strong style="color:var(--bright);">${h.horas}h</strong></td>
+      <td><span class="badge badge-g">${h.rotacion}</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRecord('horas',${h.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderAvanceHoras(){
+  const ests = DB.get('estudiantes');
+  const horas = DB.get('horas');
+  const META = 80;
+  const el = document.getElementById('avance-horas');
+  if(!el) return;
+  el.innerHTML = ests.map(e=>{
+    const total = horas.filter(h=>h.est===e.id||h.est===Number(e.id)).reduce((s,h)=>s+Number(h.horas),0);
+    const pct = Math.min(Math.round((total/META)*100),100);
+    return `
+      <div style="margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-style:italic;margin-bottom:4px;">
+          <span>${e.nombre} <span class="badge badge-g" style="margin-left:6px;">${e.cohorte}</span></span>
+          <span style="color:${total>=META?'var(--bright)':total>=50?'var(--gold)':'#f08080'}">${total}/${META}h (${pct}%)</span>
+        </div>
+        <div class="pbar-wrap"><div class="pbar ${pct>=100?'':pct>=60?'warn':'danger'}" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  DOSIMETRÍA
+// ═══════════════════════════════════════════════════════
+function guardarDosis(){
+  const estId = Number(document.getElementById('dosi-est').value);
+  const ests = DB.get('estudiantes');
+  const est = ests.find(e=>e.id===estId);
+  if(!est){ showOk('Seleccione un estudiante.'); return; }
+  const valor = Number(v('dosi-valor'));
+  if(!valor&&valor!==0){ showOk('Ingrese un valor de dosis válido.'); return; }
+  const num = v('dosi-num');
+  if(!num){ showOk('Ingrese el número de dosímetro.'); return; }
+  DB.push('dosis',{est:estId,nombre:est.nombre,num,fecha:v('dosi-fecha'),valor,tipo:v('dosi-tipo'),area:v('dosi-area'),periodo:v('dosi-periodo'),obs:v('dosi-obs'),ts:Date.now()});
+  log(`Dosis registrada: ${est.nombre} — ${valor} mSv`);
+  ['dosi-num','dosi-valor','dosi-obs'].forEach(id=>document.getElementById(id).value='');
+  renderDosis();
+  const acum = DB.get('dosis').filter(d=>d.est===estId).reduce((s,d)=>s+Number(d.valor),0);
+  if(acum>15) showOk(`⚠️ ALERTA: ${est.nombre} lleva ${acum.toFixed(2)} mSv acumulados. Cerca del límite anual (20 mSv).`);
+  else showOk(`Lectura dosimétrica registrada: ${valor} mSv para ${est.nombre}.`);
+}
+
+function renderDosis(){
+  const data = DB.get('dosis');
+  const tbody = document.getElementById('tbl-dosis');
+  if(!tbody) return;
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="8">Sin lecturas dosimétricas registradas</td></tr>`; return; }
+  tbody.innerHTML = data.reverse().map(d=>{
+    const estado = d.valor<1?'badge-g':d.valor<5?'badge-a':'badge-r';
+    const txt = d.valor<1?'Normal':d.valor<5?'Moderado':'Elevado';
+    return `<tr>
+      <td>${d.nombre}</td><td>${d.num}</td><td>${d.fecha||'—'}</td>
+      <td><strong>${Number(d.valor).toFixed(2)} mSv</strong></td>
+      <td>${d.tipo}</td><td>${d.area}</td>
+      <td><span class="badge ${estado}">${txt}</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRecord('dosis',${d.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDosisMonitor(){
+  const ests = DB.get('estudiantes');
+  const dosis = DB.get('dosis');
+  const LIMITE = 20;
+  const el = document.getElementById('dosis-monitor');
+  if(!el) return;
+  el.innerHTML = ests.map(e=>{
+    const total = dosis.filter(d=>d.est===e.id||d.est===Number(e.id)).reduce((s,d)=>s+Number(d.valor),0);
+    const pct = Math.min(Math.round((total/LIMITE)*100),100);
+    const cls = pct>=75?'danger':pct>=50?'warn':'';
+    const badge = pct>=75?'badge-r':pct>=50?'badge-a':'badge-g';
+    const label = pct>=75?'⚠️ Alerta':pct>=50?'Moderado':'Normal';
+    return `
+      <div style="margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-style:italic;margin-bottom:4px;">
+          <span>${e.nombre}</span>
+          <span>${total.toFixed(2)} mSv / ${LIMITE} mSv &nbsp; <span class="badge ${badge}">${label}</span></span>
+        </div>
+        <div class="pbar-wrap"><div class="pbar ${cls}" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  FACTURACIÓN
+// ═══════════════════════════════════════════════════════
+function guardarPago(){
+  const estId = Number(document.getElementById('fact-est').value);
+  const ests = DB.get('estudiantes');
+  const est = ests.find(e=>e.id===estId);
+  if(!est){ showOk('Seleccione un estudiante.'); return; }
+  const monto = Number(v('fact-monto'));
+  if(!monto||monto<=0){ showOk('Ingrese un monto válido.'); return; }
+  const recibo = v('fact-recibo');
+  if(!recibo){ showOk('Ingrese el número de recibo.'); return; }
+  DB.push('pagos',{est:estId,nombre:est.nombre,concepto:v('fact-concepto'),monto,metodo:v('fact-metodo'),fecha:v('fact-fecha'),periodo:v('fact-periodo'),recibo,obs:v('fact-obs'),ts:Date.now()});
+  log(`Pago registrado: ${est.nombre} — $${monto} (${v('fact-concepto')})`);
+  ['fact-monto','fact-recibo','fact-obs'].forEach(id=>document.getElementById(id).value='');
+  renderPagos();
+  showOk(`Pago de $${monto} registrado para ${est.nombre}. Recibo: ${recibo}`);
+}
+
+function renderPagos(){
+  const data = DB.get('pagos');
+  const tbody = document.getElementById('tbl-pagos');
+  if(!tbody) return;
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="8">Sin pagos registrados</td></tr>`; return; }
+  tbody.innerHTML = data.reverse().map(p=>`
+    <tr>
+      <td>${p.nombre}</td><td>${p.concepto}</td>
+      <td><strong style="color:var(--bright);">$${Number(p.monto).toFixed(2)}</strong></td>
+      <td>${p.metodo}</td><td>${p.fecha||'—'}</td><td>${p.periodo}</td>
+      <td><span class="badge badge-g">${p.recibo}</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRecord('pagos',${p.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  ACADEMIA
+// ═══════════════════════════════════════════════════════
+function guardarAcademia(){
+  const docente = v('acad-docente');
+  const titulo = v('acad-titulo');
+  if(!docente||!titulo){ showOk('Complete los campos requeridos.'); return; }
+  DB.push('academia',{docente,tipo:v('acad-tipo'),titulo,medio:v('acad-medio'),anio:v('acad-anio'),estudiantes:v('acad-estudiantes'),ts:Date.now()});
+  log(`Producción registrada: ${docente} — ${v('acad-tipo')}`);
+  ['acad-docente','acad-titulo','acad-medio','acad-anio','acad-estudiantes'].forEach(id=>document.getElementById(id).value='');
+  renderAcademia();
+  showOk(`Producción académica de ${docente} registrada correctamente.`);
+}
+
+function renderAcademia(){
+  const data = DB.get('academia');
+  const tbody = document.getElementById('tbl-academia');
+  if(!tbody) return;
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="6">Sin producción académica registrada</td></tr>`; return; }
+  tbody.innerHTML = data.reverse().map(a=>`
+    <tr>
+      <td>${a.docente}</td>
+      <td><span class="badge badge-a">${a.tipo}</span></td>
+      <td>${a.titulo}</td><td>${a.medio||'—'}</td><td>${a.anio||'—'}</td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRecord('academia',${a.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  COMUNICACIÓN
+// ═══════════════════════════════════════════════════════
+function enviarMensaje(){
+  const asunto = v('msg-asunto'), cuerpo = v('msg-cuerpo');
+  if(!asunto||!cuerpo){ showOk('Complete el asunto y el mensaje.'); return; }
+  DB.push('mensajes',{para:v('msg-para'),tipo:v('msg-tipo'),asunto,cuerpo,leido:false,ts:Date.now()});
+  log(`Mensaje enviado: ${asunto}`);
+  document.getElementById('msg-asunto').value='';
+  document.getElementById('msg-cuerpo').value='';
+  renderMensajes();
+  showOk(`Mensaje enviado correctamente a: ${v('msg-para')}`);
+}
+
+function renderMensajes(){
+  const data = DB.get('mensajes');
+  const tbody = document.getElementById('tbl-mensajes');
+  if(!tbody) return;
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="6">Sin mensajes en la bandeja</td></tr>`; return; }
+  tbody.innerHTML = data.reverse().map(m=>`
+    <tr>
+      <td>${new Date(m.ts).toLocaleDateString('es-PA')}</td>
+      <td>${m.para}</td>
+      <td><span class="badge badge-a">${m.tipo}</span></td>
+      <td><strong>${m.asunto}</strong></td>
+      <td><span class="badge ${m.leido?'badge-g':'badge-a'}">${m.leido?'Enviado':'Pendiente'}</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRecord('mensajes',${m.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  MODAL / UTILIDADES
+// ═══════════════════════════════════════════════════════
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function showOk(msg){ document.getElementById('modal-ok-msg').textContent=msg; openModal('modal-ok'); }
+
+let _delKey='', _delId=0;
+function deleteRecord(key, id){
+  _delKey=key; _delId=id;
+  openModal('modal-confirm');
+}
+function confirmDelete(){
+  DB.del(_delKey, _delId);
+  log(`Registro eliminado en módulo: ${_delKey}`);
+  closeModal('modal-confirm');
+  render(document.querySelector('.page.active').id.replace('page-',''));
+}
+
+function v(id){ return (document.getElementById(id)||{}).value||''; }
+
+// Fecha por defecto en inputs type=date
+document.querySelectorAll('input[type=date]').forEach(d=>d.valueAsDate=new Date());
+
+// Cerrar modales al click fuera
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+
+// Render inicial
+renderDash();
+</script>
+</body>
+</html>
